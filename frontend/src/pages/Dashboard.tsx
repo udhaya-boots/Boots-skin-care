@@ -11,7 +11,16 @@ const Dashboard: React.FC = () => {
     const fetchRecentAnalyses = async () => {
       try {
         const analyses = await skinAnalysisAPI.getRecentAnalyses();
-        setRecentAnalyses(analyses);
+//         const sorted = Array.from(analyses).sort(
+//   (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+// );
+        const sorted_analyses=[...analyses].sort((a,b)=>new Date(b.timestamp).getTime()-new Date(a.timestamp).getTime())
+        const final_analyses=sorted_analyses.map((item,id)=>({
+          ...item,
+          sl_no:id+1,
+        }))
+
+        setRecentAnalyses(final_analyses);
       } catch (error) {
         console.error('Error fetching recent analyses:', error);
         // Set dummy data for demonstration
@@ -22,6 +31,7 @@ const Dashboard: React.FC = () => {
             issues: [],
             recommendations: ['Gentle Cleanser', 'Moisturizer'],
             severity: 'low',
+            sl_no:1,
           },
         ]);
       } finally {
@@ -79,7 +89,7 @@ const Dashboard: React.FC = () => {
               <div key={analysis.id} className="analysis-item">
                 <div>
                   <div className="analysis-result">
-                    Analysis #{analysis.id}
+                    Analysis #{analysis.sl_no}
                   </div>
                   <div className="analysis-date">
                     {formatDate(analysis.timestamp)}

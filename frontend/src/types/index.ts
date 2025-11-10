@@ -16,6 +16,7 @@ export interface AnalysisResult {
   issues: SkinIssue[];
   recommendations: string[];
   severity: 'low' | 'medium' | 'high';
+  sl_no:number;
 }
 
 export interface Product {
