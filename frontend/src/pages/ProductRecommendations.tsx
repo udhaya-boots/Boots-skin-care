@@ -6,7 +6,7 @@ import skinAnalysisAPI from '../services/api';
 const ProductRecommendations: React.FC = () => {
   const { analysisId } = useParams<{ analysisId: string }>();
   const navigate = useNavigate();
-  
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -57,7 +57,8 @@ const ProductRecommendations: React.FC = () => {
           setProducts(response.products);
         } else {
           // Use mock data for demonstration
-          setProducts(mockProducts);
+          const getproducts = await skinAnalysisAPI.getProducts();
+          setProducts(getproducts);
         }
       } catch (err) {
         console.error('Error fetching recommendations:', err);
@@ -76,9 +77,8 @@ const ProductRecommendations: React.FC = () => {
     // In a real app, this would integrate with Boots' e-commerce system
     alert(`Redirecting to purchase ${productId}...`);
   };
-
-  if (loading) {
-    return (
+  {
+    loading && (
       <div className="container">
         <div className="header">
           <h1>Loading Recommendations...</h1>
@@ -89,11 +89,12 @@ const ProductRecommendations: React.FC = () => {
           </div>
         </div>
       </div>
-    );
-  }
 
-  if (error) {
-    return (
+    )
+  }
+  {
+    error &&
+    (
       <div className="container">
         <div className="header">
           <h1>Error</h1>
@@ -131,7 +132,7 @@ const ProductRecommendations: React.FC = () => {
             >
               Product Image Placeholder
             </div>
-            
+
             <div className="product-info">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                 <h3 className="product-title">{product.name}</h3>
@@ -146,9 +147,9 @@ const ProductRecommendations: React.FC = () => {
                   #{index + 1}
                 </span>
               </div>
-              
+
               <p className="product-description">{product.description}</p>
-              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                 <span className="product-price">£{product.price}</span>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -156,7 +157,7 @@ const ProductRecommendations: React.FC = () => {
                   <span>{product.rating}</span>
                 </div>
               </div>
-              
+
               <div style={{ marginBottom: '15px' }}>
                 <strong>Target Issues:</strong>
                 <div style={{ marginTop: '5px' }}>
@@ -178,7 +179,7 @@ const ProductRecommendations: React.FC = () => {
                   ))}
                 </div>
               </div>
-              
+
               <button
                 className="btn-primary"
                 onClick={() => handleBuyNow(product.id)}
