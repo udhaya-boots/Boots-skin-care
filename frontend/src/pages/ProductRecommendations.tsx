@@ -38,7 +38,7 @@ const TrophyIcon = () => (
 const ProductRecommendations: React.FC = () => {
   const { analysisId } = useParams<{ analysisId: string }>();
   const navigate = useNavigate();
-  
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -113,7 +113,6 @@ const ProductRecommendations: React.FC = () => {
           console.log('📦 Using mock data for analysisId:', analysisId);
           // Use mock data for demonstration
           setProducts(mockProducts);
-          setConfidenceScore(0.87);
         }
       } catch (err) {
         console.error('❌ Error fetching recommendations:', err);
@@ -143,55 +142,10 @@ const ProductRecommendations: React.FC = () => {
 
   const handleBuyNow = (product: Product) => {
     // In a real app, this would integrate with Boots' e-commerce system
-    const message = `🛍️ Redirecting to purchase ${product.name} for £${product.price}...`;
-    alert(message);
-    // Example: window.open(`https://boots.com/products/${product.id}`, '_blank');
+    alert(`Redirecting to purchase ${productId}...`);
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <StarIcon key={index} filled={index < Math.floor(rating)} />
-    ));
-  };
-
-  const getIssueColor = (issue: string) => {
-    const colors = {
-      acne: '#ff4757',
-      dark_spots: '#ffa502',
-      wrinkles: '#3742fa',
-      redness: '#ff6b81',
-      dryness: '#70a1ff',
-      oily_skin: '#5f27cd',
-    };
-    return colors[issue as keyof typeof colors] || '#667eea';
-  };
-
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        delayChildren: 0.1,
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring" as const,
-        stiffness: 100
-      }
-    }
-  };
-
-  // Safety fallback for any rendering issues
-  if (!products && !loading && !error) {
-    console.error('🚨 Component in invalid state - resetting to mock data');
+  if (loading) {
     return (
       <div className="container">
         <div className="header">
@@ -207,60 +161,13 @@ const ProductRecommendations: React.FC = () => {
           </button>
         </div>
       </div>
-    );
-  }
 
-  if (loading) {
-    return (
-      <motion.div 
-        className="container"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <div className="header">
-          <h1>✨ Curating Your Perfect Match...</h1>
-          <p>Our AI is analyzing your skin to find the best Boots products for you</p>
-        </div>
-        <motion.div 
-          style={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center', 
-            padding: 'var(--space-3xl)',
-            textAlign: 'center'
-          }}
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          transition={{ repeat: Infinity, duration: 2, repeatType: "reverse" }}
-        >
-          <div className="loading-spinner" style={{ marginBottom: 'var(--space-lg)' }}></div>
-          <h3 style={{ color: 'var(--gray-700)', marginBottom: 'var(--space-md)' }}>
-            Analyzing your skin profile...
-          </h3>
-          <div className="progress-bar" style={{ maxWidth: '400px', margin: '0 auto' }}>
-            <motion.div 
-              className="progress-fill" 
-              initial={{ width: '0%' }}
-              animate={{ width: '85%' }}
-              transition={{ duration: 2, ease: "easeInOut" }}
-            />
-          </div>
-          <p style={{ color: 'var(--gray-500)', marginTop: 'var(--space-md)' }}>
-            Finding the perfect products from our premium collection...
-          </p>
-        </motion.div>
-      </motion.div>
-    );
+    )
   }
 
   if (error) {
     return (
-      <motion.div 
-        className="container"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
+      <div className="container">
         <div className="header">
           <h1>😔 Oops! Something went wrong</h1>
           <p>{error}</p>
@@ -325,273 +232,98 @@ const ProductRecommendations: React.FC = () => {
         </motion.div>
       </motion.div>
 
-      <motion.div className="product-grid" variants={itemVariants}>
-        <AnimatePresence>
-          {products.map((product, index) => (
-            <motion.div 
-              key={product.id} 
-              className="product-card"
-              variants={itemVariants}
-              whileHover={{ 
-                y: -12, 
-                scale: 1.03,
-                transition: { type: "spring", stiffness: 300, damping: 20 }
+      <div className="product-grid">
+        {products.map((product, index) => (
+          <div key={product.id} className="product-card">
+            <div
+              className="product-image"
+              style={{
+                backgroundColor: '#f8f9fa',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                color: '#666',
               }}
-              layout
             >
-              {/* Rank Badge */}
-              <motion.div
-                style={{
-                  position: 'absolute',
-                  top: 'var(--space-md)',
-                  right: 'var(--space-md)',
-                  background: index === 0 ? 'var(--primary-gradient)' : 
-                             index === 1 ? 'var(--secondary-gradient)' : 'var(--accent-gradient)',
+              Product Image Placeholder
+            </div>
+            
+            <div className="product-info">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                <h3 className="product-title">{product.name}</h3>
+                <span style={{
+                  background: '#667eea',
                   color: 'white',
-                  padding: 'var(--space-xs) var(--space-md)',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  zIndex: 10,
-                  boxShadow: 'var(--shadow-md)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
-                }}
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: index * 0.2 + 0.3 }}
-              >
-                {index === 0 ? '🏆 Best Match' : 
-                 index === 1 ? '🥈 Great Choice' : '🥉 Recommended'}
-              </motion.div>
-              
-              {/* Product Image */}
-              <motion.div
-                className="product-image"
-                style={{
-                  background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px',
-                  color: 'var(--gray-500)',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div style={{ 
-                  textAlign: 'center',
-                  padding: 'var(--space-lg)'
+                  padding: '4px 8px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
                 }}>
-                  <div style={{ 
-                    fontSize: '3rem',
-                    marginBottom: 'var(--space-md)',
-                    opacity: 0.7 
-                  }}>
-                    🧴
-                  </div>
-                  <p style={{ margin: 0, fontWeight: 600 }}>
-                    {product.brand}
-                  </p>
-                  <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.8 }}>
-                    {product.category}
-                  </p>
-                </div>
-              </motion.div>
-              
-              <div className="product-info">
-                <motion.div 
-                  style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'flex-start', 
-                    marginBottom: 'var(--space-md)' 
-                  }}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.1 + 0.4 }}
-                >
-                  <h3 className="product-title" style={{ marginRight: 'var(--space-md)' }}>
-                    {product.name}
-                  </h3>
-                </motion.div>
-                
-                <motion.p 
-                  className="product-description"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.1 + 0.5 }}
-                >
-                  {product.description}
-                </motion.p>
-                
-                {/* Price and Rating */}
-                <motion.div 
-                  style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center', 
-                    marginBottom: 'var(--space-lg)' 
-                  }}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.1 + 0.6 }}
-                >
-                  <span className="product-price">£{product.price}</span>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    gap: 'var(--space-xs)',
-                    color: '#ffa502'
-                  }}>
-                    {renderStars(product.rating)}
-                    <span style={{ 
-                      marginLeft: 'var(--space-xs)',
-                      color: 'var(--gray-600)',
-                      fontSize: '0.9rem',
-                      fontWeight: 600
-                    }}>
-                      {product.rating}
-                    </span>
-                  </div>
-                </motion.div>
-                
-                {/* Target Issues */}
-                <motion.div 
-                  style={{ marginBottom: 'var(--space-lg)' }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.1 + 0.7 }}
-                >
-                  <div style={{ 
-                    color: 'var(--gray-700)', 
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    marginBottom: 'var(--space-sm)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    🎯 Targets
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-xs)' }}>
-                    {product.target_issues.map((issue) => (
-                      <motion.span
-                        key={issue}
-                        style={{
-                          background: `${getIssueColor(issue)}20`,
-                          border: `1px solid ${getIssueColor(issue)}40`,
-                          color: getIssueColor(issue),
-                          padding: 'var(--space-xs) var(--space-sm)',
-                          borderRadius: 'var(--radius-full)',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          textTransform: 'capitalize'
-                        }}
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: index * 0.1 + 0.8 }}
-                        whileHover={{ scale: 1.1 }}
-                      >
-                        {issue.replace('_', ' ')}
-                      </motion.span>
-                    ))}
-                  </div>
-                </motion.div>
-                
-                {/* Buy Button */}
-                <motion.button
-                  className="btn-primary"
-                  onClick={() => handleBuyNow(product)}
-                  style={{ 
-                    width: '100%',
-                    fontSize: '1rem',
-                    fontWeight: 700
-                  }}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: index * 0.1 + 0.9, type: "spring" }}
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: `0 8px 25px ${getIssueColor(product.target_issues[0])}40`
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ShoppingBagIcon />
-                  Buy Now - £{product.price}
-                </motion.button>
+                  #{index + 1}
+                </span>
               </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
+              
+              <p className="product-description">{product.description}</p>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <span className="product-price">£{product.price}</span>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ color: '#ffa502', marginRight: '5px' }}>★</span>
+                  <span>{product.rating}</span>
+                </div>
+              </div>
+              
+              <div style={{ marginBottom: '15px' }}>
+                <strong>Target Issues:</strong>
+                <div style={{ marginTop: '5px' }}>
+                  {product.target_issues.map((issue) => (
+                    <span
+                      key={issue}
+                      style={{
+                        display: 'inline-block',
+                        background: '#f0f0f0',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        marginRight: '5px',
+                        marginBottom: '5px',
+                      }}
+                    >
+                      {issue.replace('_', ' ')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              
+              <button
+                className="btn-primary"
+                onClick={() => handleBuyNow(product.id)}
+                style={{ width: '100%' }}
+              >
+                Buy Now - £{product.price}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
 
-      {/* CTA Section */}
-      <motion.div
-        style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: 'var(--radius-xl)',
-          padding: 'var(--space-3xl)',
-          marginTop: 'var(--space-3xl)',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: 'var(--shadow-lg)'
-        }}
-        variants={itemVariants}
-      >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 1, type: "spring" }}
-          style={{ fontSize: '3rem', marginBottom: 'var(--space-lg)' }}
+      <div style={{ textAlign: 'center', marginTop: '40px' }}>
+        <button
+          className="btn-secondary"
+          onClick={() => navigate('/analysis')}
+          style={{ marginRight: '10px' }}
         >
-          ✨
-        </motion.div>
-        <h3 style={{ 
-          color: 'var(--gray-800)', 
-          marginBottom: 'var(--space-md)',
-          fontFamily: 'var(--font-serif)'
-        }}>
-          Love your skin journey!
-        </h3>
-        <p style={{ 
-          color: 'var(--gray-600)', 
-          marginBottom: 'var(--space-xl)',
-          maxWidth: '500px',
-          margin: '0 auto var(--space-xl) auto'
-        }}>
-          Track your progress and discover new products by running another analysis in a few weeks
-        </p>
-        
-        <div style={{ 
-          display: 'flex', 
-          gap: 'var(--space-md)', 
-          justifyContent: 'center',
-          flexWrap: 'wrap'
-        }}>
-          <motion.button
-            className="btn-primary"
-            onClick={() => navigate('/analysis')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <RefreshIcon />
-            Analyze Again
-          </motion.button>
-          <motion.button
-            className="btn-secondary"
-            onClick={() => navigate('/')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <BackIcon />
-            Back to Dashboard
-          </motion.button>
-        </div>
-      </motion.div>
-    </motion.div>
+          Analyze Again
+        </button>
+        <button
+          className="btn-secondary"
+          onClick={() => navigate('/')}
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    </div>
   );
 };
 
