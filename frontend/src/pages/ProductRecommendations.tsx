@@ -38,19 +38,13 @@ const TrophyIcon = () => (
 const ProductRecommendations: React.FC = () => {
   const { analysisId } = useParams<{ analysisId: string }>();
   const navigate = useNavigate();
-  
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<any>('');
   const [confidenceScore, setConfidenceScore] = useState<number>(0);
 
-  // Debug logging
-  console.log('🚀 ProductRecommendations component mounted with analysisId:', analysisId);
 
-  // Safety check - if component fails to render, this will help debug
-  useEffect(() => {
-    console.log('🔄 ProductRecommendations useEffect triggered');
-  }, []);
 
   // Enhanced mock products with premium Boots branding
   const mockProducts: Product[] = [
@@ -88,54 +82,46 @@ const ProductRecommendations: React.FC = () => {
       brand: 'Boots Protect',
     },
   ];
-
   useEffect(() => {
     const fetchRecommendations = async () => {
+      setLoading(true);
+      setError('');
+
       try {
         console.log('🔍 ProductRecommendations: Starting fetch for analysisId:', analysisId);
-        setLoading(true);
-        setError('');
-        
+
         if (analysisId && analysisId !== 'sample') {
           console.log('🔍 Making API call to get recommendations for:', analysisId);
           const response = await skinAnalysisAPI.getRecommendations(analysisId);
           console.log('✅ API response received:', response);
-          
-          if (response && response.products) {
+
+          if (response && response.products?.length) {
             setProducts(response.products);
             setConfidenceScore(response.confidence_score || 0.85);
           } else {
-            console.warn('⚠️ Invalid API response, using mock data');
-            setProducts(mockProducts);
-            setConfidenceScore(0.85);
+            console.warn('⚠️ Empty or invalid API response. Falling back to all products.');
+            const allProducts = await skinAnalysisAPI.getProducts();
+            setProducts(allProducts);
+            setConfidenceScore(1.0);
           }
         } else {
-          console.log('📦 Using mock data for analysisId:', analysisId);
-          // Use mock data for demonstration
-          setProducts(mockProducts);
-          setConfidenceScore(0.87);
+          console.log('🧴 Sample mode: Fetching all available products');
+          const response = await skinAnalysisAPI.getProducts();
+          setProducts(response);
+          setConfidenceScore(1.0);
         }
       } catch (err) {
         console.error('❌ Error fetching recommendations:', err);
-        setError(`Failed to load recommendations: ${err instanceof Error ? err.message : 'Unknown error'}`);
-        // Fallback to mock data to prevent blank page
+        setError(err instanceof Error ? err.message : 'Unknown error');
         console.log('📦 Falling back to mock data due to error');
         setProducts(mockProducts);
         setConfidenceScore(0.75);
       } finally {
+        // ✅ Make sure loading stops immediately once products are set
         setLoading(false);
         console.log('🏁 ProductRecommendations: Fetch completed');
       }
     };
-
-    // Add safety check
-    if (!analysisId) {
-      console.warn('⚠️ No analysisId provided, using sample data');
-      setProducts(mockProducts);
-      setConfidenceScore(0.80);
-      setLoading(false);
-      return;
-    }
 
     fetchRecommendations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -199,7 +185,7 @@ const ProductRecommendations: React.FC = () => {
           <p>Something went wrong. Redirecting to dashboard...</p>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <button 
+          <button
             className="btn-primary"
             onClick={() => navigate('/')}
           >
@@ -210,78 +196,80 @@ const ProductRecommendations: React.FC = () => {
     );
   }
 
-  if (loading) {
-    return (
-      <motion.div 
-        className="container"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <div className="header">
-          <h1>✨ Curating Your Perfect Match...</h1>
-          <p>Our AI is analyzing your skin to find the best Boots products for you</p>
-        </div>
-        <motion.div 
-          style={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center', 
-            padding: 'var(--space-3xl)',
-            textAlign: 'center'
-          }}
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
-          transition={{ repeat: Infinity, duration: 2, repeatType: "reverse" }}
+  {
+    loading &&
+      (
+        <motion.div
+          className="container"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
         >
-          <div className="loading-spinner" style={{ marginBottom: 'var(--space-lg)' }}></div>
-          <h3 style={{ color: 'var(--gray-700)', marginBottom: 'var(--space-md)' }}>
-            Analyzing your skin profile...
-          </h3>
-          <div className="progress-bar" style={{ maxWidth: '400px', margin: '0 auto' }}>
-            <motion.div 
-              className="progress-fill" 
-              initial={{ width: '0%' }}
-              animate={{ width: '85%' }}
-              transition={{ duration: 2, ease: "easeInOut" }}
-            />
+          <div className="header">
+            <h1>✨ Curating Your Perfect Match...</h1>
+            <p>Our AI is analyzing your skin to find the best Boots products for you</p>
           </div>
-          <p style={{ color: 'var(--gray-500)', marginTop: 'var(--space-md)' }}>
-            Finding the perfect products from our premium collection...
-          </p>
+          <motion.div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 'var(--space-3xl)',
+              textAlign: 'center'
+            }}
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ repeat: Infinity, duration: 2, repeatType: "reverse" }}
+          >
+            <div className="loading-spinner" style={{ marginBottom: 'var(--space-lg)' }}></div>
+            <h3 style={{ color: 'var(--gray-700)', marginBottom: 'var(--space-md)' }}>
+              Analyzing your skin profile...
+            </h3>
+            <div className="progress-bar" style={{ maxWidth: '400px', margin: '0 auto' }}>
+              <motion.div
+                className="progress-fill"
+                initial={{ width: '0%' }}
+                animate={{ width: '85%' }}
+                transition={{ duration: 2, ease: "easeInOut" }}
+              />
+            </div>
+            <p style={{ color: 'var(--gray-500)', marginTop: 'var(--space-md)' }}>
+              Finding the perfect products from our premium collection...
+            </p>
+          </motion.div>
         </motion.div>
-      </motion.div>
-    );
+      );
   }
 
-  if (error) {
-    return (
-      <motion.div 
-        className="container"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        <div className="header">
-          <h1>😔 Oops! Something went wrong</h1>
-          <p>{error}</p>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <motion.button 
-            className="btn-primary"
-            onClick={() => navigate('/')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <BackIcon />
-            Back to Dashboard
-          </motion.button>
-        </div>
-      </motion.div>
-    );
+  {
+    error &&
+      (
+        <motion.div
+          className="container"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="header">
+            <h1>😔 Oops! Something went wrong</h1>
+            <p>{error}</p>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <motion.button
+              className="btn-primary"
+              onClick={() => navigate('/')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <BackIcon />
+              Back to Dashboard
+            </motion.button>
+          </div>
+        </motion.div>
+      );
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="container"
       variants={containerVariants}
       initial="hidden"
@@ -292,48 +280,57 @@ const ProductRecommendations: React.FC = () => {
           <TrophyIcon />
           Your Personalized Recommendations
         </h1>
-        <p>Based on your skin analysis, here are our top {products.length} premium Boots products tailored just for you</p>
-        
+        {/* <p>{`${products.length}===10here are our top {products.length} premium Boots products tailored just for you`}</p> */}
+        {products.length === 10 ? <p>Here are our top {products.length} premium Boots products tailored just for you</p> : <p>Based on your skin analysis, here are our top products tailored just for you
+
+        </p>}
         {/* Confidence Score */}
-        <motion.div 
-          style={{
-            background: 'rgba(102, 126, 234, 0.1)',
-            borderRadius: 'var(--radius-lg)',
-            padding: 'var(--space-md) var(--space-lg)',
-            marginTop: 'var(--space-lg)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 'var(--space-sm)'
-          }}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.5, type: "spring" }}
-        >
-          <div style={{ 
-            background: 'var(--primary-gradient)',
-            borderRadius: '50%',
-            width: '8px',
-            height: '8px'
-          }} />
-          <span style={{ 
-            color: 'var(--gray-700)', 
-            fontWeight: 600,
-            fontSize: '0.9rem'
-          }}>
-            {Math.round(confidenceScore * 100)}% Confidence Match
-          </span>
-        </motion.div>
+        {analysisId !== 'sample' && (
+          <motion.div
+            style={{
+              background: 'rgba(102, 126, 234, 0.1)',
+              borderRadius: 'var(--radius-lg)',
+              padding: 'var(--space-md) var(--space-lg)',
+              marginTop: 'var(--space-lg)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--space-sm)',
+            }}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.5, type: 'spring' }}
+          >
+            <div
+              style={{
+                background: 'var(--primary-gradient)',
+                borderRadius: '50%',
+                width: '8px',
+                height: '8px',
+              }}
+            />
+            <span
+              style={{
+                color: 'var(--gray-700)',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+              }}
+            >
+              {Math.round(confidenceScore * 100)}% Confidence Match
+            </span>
+          </motion.div>
+        )}
+
       </motion.div>
 
       <motion.div className="product-grid" variants={itemVariants}>
         <AnimatePresence>
           {products.map((product, index) => (
-            <motion.div 
-              key={product.id} 
+            <motion.div
+              key={product.id}
               className="product-card"
               variants={itemVariants}
-              whileHover={{ 
-                y: -12, 
+              whileHover={{
+                y: -12,
                 scale: 1.03,
                 transition: { type: "spring", stiffness: 300, damping: 20 }
               }}
@@ -345,8 +342,8 @@ const ProductRecommendations: React.FC = () => {
                   position: 'absolute',
                   top: 'var(--space-md)',
                   right: 'var(--space-md)',
-                  background: index === 0 ? 'var(--primary-gradient)' : 
-                             index === 1 ? 'var(--secondary-gradient)' : 'var(--accent-gradient)',
+                  background: index === 0 ? 'var(--primary-gradient)' :
+                    index === 1 ? 'var(--secondary-gradient)' : 'var(--accent-gradient)',
                   color: 'white',
                   padding: 'var(--space-xs) var(--space-md)',
                   borderRadius: 'var(--radius-full)',
@@ -361,10 +358,10 @@ const ProductRecommendations: React.FC = () => {
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: index * 0.2 + 0.3 }}
               >
-                {index === 0 ? '🏆 Best Match' : 
-                 index === 1 ? '🥈 Great Choice' : '🥉 Recommended'}
+                {index === 0 ? '🏆 Best Match' :
+                  index === 1 ? '🥈 Great Choice' : '🥉 Recommended'}
               </motion.div>
-              
+
               {/* Product Image */}
               <motion.div
                 className="product-image"
@@ -381,14 +378,14 @@ const ProductRecommendations: React.FC = () => {
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.3 }}
               >
-                <div style={{ 
+                <div style={{
                   textAlign: 'center',
                   padding: 'var(--space-lg)'
                 }}>
-                  <div style={{ 
+                  <div style={{
                     fontSize: '3rem',
                     marginBottom: 'var(--space-md)',
-                    opacity: 0.7 
+                    opacity: 0.7
                   }}>
                     🧴
                   </div>
@@ -400,14 +397,14 @@ const ProductRecommendations: React.FC = () => {
                   </p>
                 </div>
               </motion.div>
-              
+
               <div className="product-info">
-                <motion.div 
-                  style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'flex-start', 
-                    marginBottom: 'var(--space-md)' 
+                <motion.div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: 'var(--space-md)'
                   }}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -417,8 +414,8 @@ const ProductRecommendations: React.FC = () => {
                     {product.name}
                   </h3>
                 </motion.div>
-                
-                <motion.p 
+
+                <motion.p
                   className="product-description"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -426,28 +423,28 @@ const ProductRecommendations: React.FC = () => {
                 >
                   {product.description}
                 </motion.p>
-                
+
                 {/* Price and Rating */}
-                <motion.div 
-                  style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center', 
-                    marginBottom: 'var(--space-lg)' 
+                <motion.div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 'var(--space-lg)'
                   }}
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: index * 0.1 + 0.6 }}
                 >
                   <span className="product-price">£{product.price}</span>
-                  <div style={{ 
-                    display: 'flex', 
+                  <div style={{
+                    display: 'flex',
                     alignItems: 'center',
                     gap: 'var(--space-xs)',
                     color: '#ffa502'
                   }}>
                     {renderStars(product.rating)}
-                    <span style={{ 
+                    <span style={{
                       marginLeft: 'var(--space-xs)',
                       color: 'var(--gray-600)',
                       fontSize: '0.9rem',
@@ -457,16 +454,16 @@ const ProductRecommendations: React.FC = () => {
                     </span>
                   </div>
                 </motion.div>
-                
+
                 {/* Target Issues */}
-                <motion.div 
+                <motion.div
                   style={{ marginBottom: 'var(--space-lg)' }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: index * 0.1 + 0.7 }}
                 >
-                  <div style={{ 
-                    color: 'var(--gray-700)', 
+                  <div style={{
+                    color: 'var(--gray-700)',
                     fontWeight: 600,
                     fontSize: '0.85rem',
                     marginBottom: 'var(--space-sm)',
@@ -499,12 +496,12 @@ const ProductRecommendations: React.FC = () => {
                     ))}
                   </div>
                 </motion.div>
-                
+
                 {/* Buy Button */}
                 <motion.button
                   className="btn-primary"
                   onClick={() => handleBuyNow(product)}
-                  style={{ 
+                  style={{
                     width: '100%',
                     fontSize: '1rem',
                     fontWeight: 700
@@ -512,7 +509,7 @@ const ProductRecommendations: React.FC = () => {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: index * 0.1 + 0.9, type: "spring" }}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.05,
                     boxShadow: `0 8px 25px ${getIssueColor(product.target_issues[0])}40`
                   }}
@@ -549,25 +546,25 @@ const ProductRecommendations: React.FC = () => {
         >
           ✨
         </motion.div>
-        <h3 style={{ 
-          color: 'var(--gray-800)', 
+        <h3 style={{
+          color: 'var(--gray-800)',
           marginBottom: 'var(--space-md)',
           fontFamily: 'var(--font-serif)'
         }}>
           Love your skin journey!
         </h3>
-        <p style={{ 
-          color: 'var(--gray-600)', 
+        <p style={{
+          color: 'var(--gray-600)',
           marginBottom: 'var(--space-xl)',
           maxWidth: '500px',
           margin: '0 auto var(--space-xl) auto'
         }}>
           Track your progress and discover new products by running another analysis in a few weeks
         </p>
-        
-        <div style={{ 
-          display: 'flex', 
-          gap: 'var(--space-md)', 
+
+        <div style={{
+          display: 'flex',
+          gap: 'var(--space-md)',
           justifyContent: 'center',
           flexWrap: 'wrap'
         }}>

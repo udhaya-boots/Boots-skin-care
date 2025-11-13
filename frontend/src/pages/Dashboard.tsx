@@ -190,7 +190,7 @@ const Dashboard: React.FC = () => {
               fontWeight: 600,
               fontSize: '0.85rem'
             }}>
-              {backendConnected ? '🟢 Backend Connected' : '🔴 Backend Offline (Demo Mode)'}
+              {backendConnected ? ' Online' : 'Offline'}
             </span>
           </motion.div>
         )}
