@@ -1,0 +1,29 @@
+{
+  "name": "boots-skin-care-ar",
+  "version": "1.0.0",
+  "description": "AR-based skin analysis application with product recommendations",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "frontend": "cd frontend && npm start",
+    "backend": "cd backend && venv_py12\\Scripts\\python.exe app.py",
+    "backend-direct": "cd backend && python app.py",
+    "install-all": "npm install && cd frontend && npm install",
+    "setup-python12": "detect_python12.bat",
+    "build": "cd frontend && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "skincare",
+    "AR",
+    "computer-vision",
+    "react",
+    "python",
+    "flask"
+  ],
+  "author": "Boots Skin Care Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}
