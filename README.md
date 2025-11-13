@@ -167,6 +167,5 @@ Boots-skin-care/
 
 ---
 
-**Built with ❤️ for Boots Customers**
 
 Backend: `http://localhost:5000` | Frontend: `http://localhost:3000`
